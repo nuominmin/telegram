@@ -1,8 +1,10 @@
 package telegram_test
 
 import (
+	"fmt"
 	"gopkg.in/telebot.v3"
 	"telegram"
+	"telegram/middleware"
 	"testing"
 )
 
@@ -17,6 +19,8 @@ func TestNewTelebot(t *testing.T) {
 		return
 	}
 
+	bot.Use(middleware.Logger())
+
 	err = bot.NewCommands().
 		AddCommand("/start", "show menu", startHandler).
 		Commit()
@@ -29,9 +33,9 @@ func TestNewTelebot(t *testing.T) {
 	startInlineKeyboard = bot.NewInlineKeyboard().
 		NewRow().
 		AddReplyBtn("reply", "reply", replyCallbackData).
-		AddReplyBtnWithData("reply", "replywithdata", "datadata", replyCallbackData).
-		AddReplyBtnWithData("withdrawsolana", "Withdraw", "withdraw", replyCallbackData).
-		AddReplyBtnWithData("MenuRefresh", "Refresh", "Refresh data", replyCallbackData).
+		AddReplyBtnWithData("reply", "replywithdata", "replywithdata", replyCallbackData).
+		AddReplyBtnWithData("withdrawsolana", "Withdraw", "Withdraw", replyCallbackData).
+		AddReplyBtnWithDataFunc("MenuRefresh", "Refresh", getDataFun("Refresh"), replyCallbackData).
 		NewRow().
 		AddWebAppBtn("智能合约文档", "https://goethereumbook.org/zh/smart-contract-read/").
 		AddWebAppBtn("Google", "https://google.com").
@@ -65,4 +69,10 @@ func replyCallbackData(ctx telebot.Context) error {
 		data = "callback data is empty"
 	}
 	return ctx.Send(data)
+}
+
+func getDataFun(data string) telegram.CallbackDataFunc {
+	return func(ctx telebot.Context) (string, error) {
+		return fmt.Sprintf("cmd: %s, chat id: %d, username: %s", data, ctx.Chat().ID, ctx.Chat().Username), nil
+	}
 }

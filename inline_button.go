@@ -4,6 +4,8 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
+type CallbackDataFunc func(telebot.Context) (string, error)
+
 type InlineKeyboard struct {
 	bot           *telebot.Bot
 	inlineButtons [][]InlineButton
@@ -11,7 +13,7 @@ type InlineKeyboard struct {
 
 type InlineButton struct {
 	telebot.InlineButton
-	telebot.ReplyButton
+	DataFunc    CallbackDataFunc
 	Handler     telebot.HandlerFunc
 	Middlewares []telebot.MiddlewareFunc
 }
@@ -65,6 +67,18 @@ func (ik *InlineKeyboard) AddReplyBtnWithData(unique, text, data string, handler
 	})
 }
 
+// AddReplyBtnWithDataFunc 在当前行添加回复按钮与数据方法
+func (ik *InlineKeyboard) AddReplyBtnWithDataFunc(unique, text string, dataFunc CallbackDataFunc, handler telebot.HandlerFunc) *InlineKeyboard {
+	return ik.AddButton(InlineButton{
+		InlineButton: telebot.InlineButton{
+			Unique: unique,
+			Text:   text,
+		},
+		Handler:  handler,
+		DataFunc: dataFunc,
+	})
+}
+
 // AddWebAppBtn 在当前行添加小程序按钮
 func (ik *InlineKeyboard) AddWebAppBtn(text, webAppURL string) *InlineKeyboard {
 	return ik.AddButton(InlineButton{
@@ -103,7 +117,16 @@ func (ik *InlineKeyboard) Commit() (inlineKeyboard [][]telebot.InlineButton) {
 
 		for j := 0; j < len(ik.inlineButtons[i]); j++ {
 			if ik.inlineButtons[i][j].Unique != "" && ik.inlineButtons[i][j].Handler != nil {
-				ik.bot.Handle(&ik.inlineButtons[i][j].InlineButton, ik.inlineButtons[i][j].Handler, ik.inlineButtons[i][j].Middlewares...)
+				ik.bot.Handle(&ik.inlineButtons[i][j].InlineButton, func(ctx telebot.Context) error {
+					if dataFunc := ik.inlineButtons[i][j].DataFunc; dataFunc != nil {
+						data, err := dataFunc(ctx)
+						if err != nil {
+							return err
+						}
+						ctx.Callback().Data = data
+					}
+					return ik.inlineButtons[i][j].Handler(ctx)
+				}, ik.inlineButtons[i][j].Middlewares...)
 			}
 			inlineButtons = append(inlineButtons, ik.inlineButtons[i][j].InlineButton)
 		}
