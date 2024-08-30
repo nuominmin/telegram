@@ -19,7 +19,7 @@ func TestNewTelebot(t *testing.T) {
 		return
 	}
 
-	bot.Use(middleware.Logger())
+	bot.Use(middleware.Logger)
 
 	err = bot.NewCommands().
 		AddCommand("/start", "show menu", startHandler).
