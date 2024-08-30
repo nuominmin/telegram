@@ -2,9 +2,9 @@ package telegram_test
 
 import (
 	"fmt"
+	"github.com/nuominmin/telegram"
+	"github.com/nuominmin/telegram/middleware"
 	"gopkg.in/telebot.v3"
-	"telegram"
-	"telegram/middleware"
 	"testing"
 )
 

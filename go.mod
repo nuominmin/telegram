@@ -1,4 +1,4 @@
-module telegram
+module github.com/nuominmin/telegram
 
 go 1.23.0
 
