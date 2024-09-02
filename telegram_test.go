@@ -22,7 +22,16 @@ func TestNewTelebot(t *testing.T) {
 	bot.Use(middleware.Logger)
 
 	err = bot.NewCommands().
-		AddCommand("/start", "show menu", startHandler).
+		//AddCommand("/start", "show menu", startHandler).
+		AddCommand("/start", "show menu", func(ctx telebot.Context) error {
+			fmt.Println("========", ctx.Get("key"))
+			return startHandler(ctx)
+		}, func(handlerFunc telebot.HandlerFunc) telebot.HandlerFunc {
+			return func(ctx telebot.Context) error {
+				ctx.Set("key", "xxxxxxxx")
+				return handlerFunc(ctx)
+			}
+		}).
 		Commit()
 
 	if err != nil {
@@ -64,7 +73,6 @@ Join Telegram group @sillybot_users for help and questions about Sillybot`
 }
 
 func buy(ctx telebot.Context) error {
-	bot.ResetUserContext(ctx).SetTrace(ctx, "buy")
 	return ctx.Send("Enter a token contract address to buy")
 }
 

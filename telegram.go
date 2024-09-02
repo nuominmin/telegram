@@ -10,7 +10,6 @@ import (
 )
 
 type Bot struct {
-	UserContextManager
 	bot *telebot.Bot
 }
 
@@ -49,8 +48,7 @@ func NewBot(token string, opts ...Option) (*Bot, error) {
 	}
 
 	return &Bot{
-		UserContextManager: NewUserContextManager(),
-		bot:                bot,
+		bot: bot,
 	}, err
 }
 
