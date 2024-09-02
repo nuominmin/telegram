@@ -67,6 +67,10 @@ func (b *Bot) Use(middleware ...telebot.MiddlewareFunc) {
 	b.bot.Use(middleware...)
 }
 
+func (b *Bot) Handle(endpoint interface{}, h telebot.HandlerFunc, m ...telebot.MiddlewareFunc) {
+	b.bot.Handle(endpoint, h, m...)
+}
+
 func (b *Bot) Stop() {
 	b.bot.Stop()
 }
