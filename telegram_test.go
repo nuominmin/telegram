@@ -32,7 +32,7 @@ func TestNewTelebot(t *testing.T) {
 
 	startInlineKeyboard = bot.NewInlineKeyboard().
 		NewRow().
-		AddReplyBtn("reply", "reply", replyCallbackData).
+		AddReplyBtn("buy", "buy", buy).
 		AddReplyBtnWithData("reply", "replywithdata", "replywithdata", replyCallbackData).
 		AddReplyBtnWithData("withdrawsolana", "Withdraw", "Withdraw", replyCallbackData).
 		AddReplyBtnWithDataFunc("MenuRefresh", "Refresh", getDataFun("Refresh"), replyCallbackData).
@@ -61,6 +61,11 @@ Join Telegram group @sillybot_users for help and questions about Sillybot`
 	return ctx.Send(message, &telebot.ReplyMarkup{
 		InlineKeyboard: startInlineKeyboard,
 	}, telebot.ModeHTML)
+}
+
+func buy(ctx telebot.Context) error {
+	bot.ResetUserContext(ctx).SetTrace(ctx, "buy")
+	return ctx.Send("Enter a token contract address to buy")
 }
 
 func replyCallbackData(ctx telebot.Context) error {

@@ -12,6 +12,7 @@ func Logger(handlerFunc telebot.HandlerFunc) telebot.HandlerFunc {
 		switch {
 		case ctx.Callback() != nil:
 			command = ctx.Callback().Unique
+
 		case ctx.Message() != nil:
 			command = ctx.Message().Text
 		default:
