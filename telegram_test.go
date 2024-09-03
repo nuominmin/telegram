@@ -2,14 +2,16 @@ package telegram_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/nuominmin/telegram"
 	"github.com/nuominmin/telegram/middleware"
 	"gopkg.in/telebot.v3"
-	"testing"
 )
 
 var bot *telegram.Bot
-var startInlineKeyboard [][]telebot.InlineButton
+var pageAInlineKeyboard [][]telebot.InlineButton
+var pageBInlineKeyboard [][]telebot.InlineButton
 
 func TestNewTelebot(t *testing.T) {
 	var err error
@@ -25,7 +27,7 @@ func TestNewTelebot(t *testing.T) {
 		//AddCommand("/start", "show menu", startHandler).
 		AddCommand("/start", "show menu", func(ctx telebot.Context) error {
 			fmt.Println("========", ctx.Get("key"))
-			return startHandler(ctx)
+			return start(ctx)
 		}, func(handlerFunc telebot.HandlerFunc) telebot.HandlerFunc {
 			return func(ctx telebot.Context) error {
 				ctx.Set("key", "xxxxxxxx")
@@ -39,41 +41,55 @@ func TestNewTelebot(t *testing.T) {
 		return
 	}
 
-	startInlineKeyboard = bot.NewInlineKeyboard().
+	pageAInlineKeyboard, err = bot.NewInlineKeyboard().
 		NewRow().
-		AddReplyBtn("buy", "buy", buy).
-		AddReplyBtnWithData("reply", "replywithdata", "replywithdata", replyCallbackData).
-		AddReplyBtnWithData("withdrawsolana", "Withdraw", "Withdraw", replyCallbackData).
-		AddReplyBtnWithDataFunc("MenuRefresh", "Refresh", getDataFun("Refresh"), replyCallbackData).
+		AddBackBtn("返回上一页").
 		NewRow().
-		AddWebAppBtn("智能合约文档", "https://goethereumbook.org/zh/smart-contract-read/").
-		AddWebAppBtn("Google", "https://google.com").
-		AddInlineQueryBtn("查询", "xixi").
+		AddReplyBtnWithData("pageACCCCCC", "pageACCCCCC", "pageACCCCCC", pageA).
+		AddReplyBtnWithData("pageADDDDDD", "pageADDDDDD", "pageADDDDDD", pageA).
 		Commit()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	pageBInlineKeyboard, err = bot.NewInlineKeyboard().
+		NewRow().
+		AddBackBtn("返回上一页").
+		NewRow().
+		AddReplyBtnWithData("pageBXXXXXX", "pageBXXXXXX", "pageBXXXXXX", pageB).
+		AddReplyBtnWithData("pageBWWWWWW", "pageBWWWWWW", "pageBWWWWWW", pageB).
+		Commit()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
+		fmt.Println("========", ctx.Get("key"))
+		return nil
+	})
 
 	t.Logf("me: %+v", bot.Me())
 
 	bot.Start()
-	defer bot.Stop()
 }
 
-func startHandler(ctx telebot.Context) error {
-	message := `Solana · 🅴 (https://solscan.io/account/93oFkxpYEB7yjmySq5Jsdn9y4BCZa4fK28u19teutP8S)
-93oFkxpYEB7yjmySq5Jsdn9y4BCZa4fK28u19teutP8S  (Tap to copy)
-Total Balance: $0.00
-Sol Balance: 0.000 SOL ($0.00)
-
-Press the Refresh button to update your current balance.
-
-Join Telegram group @sillybot_users for help and questions about Sillybot`
-
-	return ctx.Send(message, &telebot.ReplyMarkup{
-		InlineKeyboard: startInlineKeyboard,
+func start(ctx telebot.Context) error {
+	return ctx.Send(ctx.Text(), &telebot.ReplyMarkup{
+		InlineKeyboard: pageAInlineKeyboard,
 	}, telebot.ModeHTML)
 }
 
-func buy(ctx telebot.Context) error {
-	return ctx.Send("Enter a token contract address to buy")
+func pageA(ctx telebot.Context) error {
+	return ctx.Send(ctx.Text(), &telebot.ReplyMarkup{
+		InlineKeyboard: pageBInlineKeyboard,
+	}, telebot.ModeHTML)
+}
+
+func pageB(ctx telebot.Context) error {
+	return ctx.Send(ctx.Callback().Data)
 }
 
 func replyCallbackData(ctx telebot.Context) error {
@@ -84,7 +100,7 @@ func replyCallbackData(ctx telebot.Context) error {
 	return ctx.Send(data)
 }
 
-func getDataFun(data string) telegram.CallbackDataFunc {
+func getRefreshDataFun(data string) telegram.CallbackDataFunc {
 	return func(ctx telebot.Context) (string, error) {
 		return fmt.Sprintf("cmd: %s, chat id: %d, username: %s", data, ctx.Chat().ID, ctx.Chat().Username), nil
 	}
