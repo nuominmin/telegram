@@ -73,8 +73,18 @@ func (b *Bot) Stop() {
 	b.bot.Stop()
 }
 
-func (b *Bot) SetWebAppMenuButton(text, webAppUrl string) error {
-	return b.bot.SetMenuButton(b.Me(), &telebot.MenuButton{
+func (b *Bot) SetMenuButtonWebAppWithUser(chatId int64, text, webAppUrl string) error {
+	return b.bot.SetMenuButton(&telebot.User{ID: chatId}, &telebot.MenuButton{
+		Type: telebot.MenuButtonWebApp,
+		Text: text,
+		WebApp: &telebot.WebApp{
+			URL: webAppUrl,
+		},
+	})
+}
+
+func (b *Bot) SetMenuButtonWebApp(text, webAppUrl string) error {
+	return b.bot.SetMenuButton(nil, &telebot.MenuButton{
 		Type: telebot.MenuButtonWebApp,
 		Text: text,
 		WebApp: &telebot.WebApp{
