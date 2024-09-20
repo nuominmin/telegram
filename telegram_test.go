@@ -21,18 +21,23 @@ func TestNewTelebot(t *testing.T) {
 
 	bot.Use(middleware.Logger)
 
-	err = bot.NewCommands().
-		//AddCommand("/start", "show menu", startHandler).
-		AddCommand("/start", "show menu", func(ctx telebot.Context) error {
-			fmt.Println("========", ctx.Get("key"))
-			return startHandler(ctx)
-		}, func(handlerFunc telebot.HandlerFunc) telebot.HandlerFunc {
-			return func(ctx telebot.Context) error {
-				ctx.Set("key", "xxxxxxxx")
-				return handlerFunc(ctx)
-			}
-		}).
-		Commit()
+	if err = bot.SetWebAppMenuButton("GO", "https://goethereumbook.org/zh/smart-contract-read/"); err != nil {
+		t.Error(err)
+		return
+	}
+
+	//err = bot.NewCommands().
+	//	//AddCommand("/start", "show menu", startHandler).
+	//	AddCommand("/start1", "show menu", func(ctx telebot.Context) error {
+	//		fmt.Println("========", ctx.Get("key"))
+	//		return startHandler(ctx)
+	//	}, func(handlerFunc telebot.HandlerFunc) telebot.HandlerFunc {
+	//		return func(ctx telebot.Context) error {
+	//			ctx.Set("key", "xxxxxxxx")
+	//			return handlerFunc(ctx)
+	//		}
+	//	}).
+	//	Commit()
 
 	if err != nil {
 		t.Error(err)

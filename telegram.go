@@ -72,3 +72,13 @@ func (b *Bot) Handle(endpoint interface{}, h telebot.HandlerFunc, m ...telebot.M
 func (b *Bot) Stop() {
 	b.bot.Stop()
 }
+
+func (b *Bot) SetWebAppMenuButton(text, webAppUrl string) error {
+	return b.bot.SetMenuButton(b.Me(), &telebot.MenuButton{
+		Type: telebot.MenuButtonWebApp,
+		Text: text,
+		WebApp: &telebot.WebApp{
+			URL: webAppUrl,
+		},
+	})
+}
