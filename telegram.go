@@ -92,3 +92,7 @@ func (b *Bot) SetMenuButtonWebApp(text, webAppUrl string) error {
 		},
 	})
 }
+
+func (b *Bot) Bot() *telebot.Bot {
+	return b.bot
+}
